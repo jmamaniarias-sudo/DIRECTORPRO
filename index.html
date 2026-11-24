@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      (function () {
+        function isExtError(src, msg, stack) {
+          var s = String(src || '');
+          var st = String(stack || '');
+          var m = String(msg || '');
+          return (
+            s.indexOf('chrome-extension://') === 0 ||
+            s.indexOf('moz-extension://') === 0 ||
+            st.indexOf('chrome-extension://') !== -1 ||
+            (m.indexOf('Cannot set property fetch of #<Window>') !== -1 &&
+              (s.indexOf('extension://') !== -1 || st.indexOf('extension://') !== -1))
+          );
+        }
+        window.addEventListener(
+          'error',
+          function (ev) {
+            if (isExtError(ev.filename, ev.message, ev.error && ev.error.stack)) {
+              ev.preventDefault();
+              ev.stopImmediatePropagation();
+            }
+          },
+          true
+        );
+        window.addEventListener(
+          'unhandledrejection',
+          function (ev) {
+            var r = ev.reason;
+            if (r && isExtError('', r.message, r.stack)) {
+              ev.preventDefault();
+              ev.stopImmediatePropagation();
+            }
+          },
+          true
+        );
+      })();
+    </script>
+    <script>
+      (function () {
+        var BUILD_VERSION = '2026.11.24-v12';
+        try {
+          if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function (regs) {
+              regs.forEach(function (reg) {
+                reg.unregister();
+              });
+            });
+          }
+          if ('caches' in window && window.caches && typeof window.caches.keys === 'function') {
+            window.caches.keys().then(function (keys) {
+              keys.forEach(function (key) {
+                window.caches.delete(key);
+              });
+            });
+          }
+          var prev = window.localStorage && window.localStorage.getItem('director_pro_build_version');
+          if (window.localStorage) {
+            window.localStorage.setItem('director_pro_build_version', BUILD_VERSION);
+          }
+          if (prev && prev !== BUILD_VERSION && !window.sessionStorage.getItem('director_pro_reloaded_' + BUILD_VERSION)) {
+            window.sessionStorage.setItem('director_pro_reloaded_' + BUILD_VERSION, '1');
+            window.location.reload();
+          }
+        } catch (_e) {
+          // Ignore storage restrictions in private/iframe contexts
+        }
+      })();
+    </script>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <title>DIRECTOR-PRO: Preparador Institucional para Directores de Unidad Educativa</title>
+    <meta name="description" content="Plataforma de alta exigencia para el examen de institucionalización de Directores de Unidad Educativa y Docentes Catedráticos. Incluye biblioteca de documentos originales por cargo, resúmenes analíticos, presentaciones didácticas, estudio auditivo por bloques, simulador de exámenes y banco de preguntas y respuestas." />
+    <meta property="og:title" content="DIRECTOR-PRO: Preparador Institucional para Directores de Unidad Educativa" />
+    <meta property="og:description" content="Plataforma de alta exigencia para el examen de institucionalización de Directores de Unidad Educativa y Docentes Catedráticos. Incluye biblioteca de documentos originales por cargo, resúmenes analíticos, presentaciones didácticas, estudio auditivo por bloques, simulador de exámenes y banco de preguntas y respuestas." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&display=swap" rel="stylesheet">
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+    <meta name="theme-color" content="#020617" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="DIRECTOR-PRO" />
+  </head>
+  <body class="bg-slate-50 text-slate-900 antialiased selection:bg-amber-100 selection:text-amber-900 font-sans">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+
